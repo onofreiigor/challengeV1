@@ -36,6 +36,7 @@ namespace DotaChallengeV1.Models
         {
             Challenges ch = new Challenges();
             ch.ChallengeDetails = new List<ChallengeDetail>();
+            MvcApplication.SqlConn.Open();
             SqlCommand comm = new SqlCommand("select * from challengedetail where challengeid = " + id, MvcApplication.SqlConn);
             SqlDataReader reader = comm.ExecuteReader();
             while (reader.Read())
@@ -55,7 +56,30 @@ namespace DotaChallengeV1.Models
                 });
             }
             reader.Close();
+            MvcApplication.SqlConn.Close();
             return ch.ChallengeDetails;
+        }
+
+        public static ChallengeDetail AddChallengeDetail(int matchId, int chId, int userId, int heroId, float score)
+        {
+            MvcApplication.SqlConn.Open();
+            ChallengeDetail chd = new ChallengeDetail();
+            SqlCommand comm = new SqlCommand("insert into challengedetail", MvcApplication.SqlConn);
+            using (SqlCommand command = new SqlCommand("", MvcApplication.SqlConn))
+            {
+                command.Parameters.AddWithValue("@id", "abc");
+                command.Parameters.AddWithValue("@username", "abc");
+                command.Parameters.AddWithValue("@password", "abc");
+                command.Parameters.AddWithValue("@email", "abc");
+
+                int result = command.ExecuteNonQuery();
+
+                // Check Error
+                if (result < 0)
+                    Console.WriteLine("Error inserting data into Database!");
+            }
+            MvcApplication.SqlConn.Close();
+            return chd;
         }
     }
 }

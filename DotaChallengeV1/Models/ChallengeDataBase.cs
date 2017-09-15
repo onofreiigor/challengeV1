@@ -16,11 +16,10 @@ namespace DotaChallengeV1.Models
             try
             {
                 sqlConn = new SqlConnection(connString);
-                sqlConn.Open();
             }
             catch (SqlException ex)
             {
-                Console.WriteLine("----------------------------------------------\nData Base Connection error\n" + ex.Message + "----------------------------------------\n");
+                Console.WriteLine("------------\nData Base Connection error\n" + ex.Message + "-----------\n");
                 return null;
             }
             return sqlConn;

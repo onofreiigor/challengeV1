@@ -22,14 +22,17 @@ namespace DotaChallengeV1.Models
         {
             public int DetailId { get; set; }
             public int ChallengeId { get; set; }
-            public int MatchId { get; set; }
             public int UserId { get; set; }
-            public string UserName { get; set; }
-            public string HerroName { get; set; }
-            public int HeroLevel { get; set; }
+            public int? HeroId { get; set; }
+            public int? HeroLevel { get; set; }
             public int Score { get; set; }
-            public int GameDuration { get; set; }
-            public int InventoryId { get; set; }
+            public int? ScoreTypeId { get; set; }
+            public int? Item0 { get; set; }
+            public int? Item1 { get; set; }
+            public int? Item2 { get; set; }
+            public int? Item3 { get; set; }
+            public int? Item4 { get; set; }
+            public int? Item5 { get; set; }
         }
 
         public static List<ChallengeDetail> GetChallengeDetailsById(int id)
@@ -45,14 +48,17 @@ namespace DotaChallengeV1.Models
                 {
                     DetailId = reader.GetInt32(0),
                     ChallengeId = reader.GetInt32(1),
-                    MatchId = reader.GetInt32(2),
-                    UserId = reader.GetInt32(3),
-                    UserName = reader.GetString(4),
-                    HerroName = reader.GetString(5),
-                    HeroLevel = reader.GetInt32(6),
-                    Score = reader.GetInt32(7),
-                    GameDuration = reader.GetInt32(8),
-                    InventoryId = reader.GetInt32(9)
+                    UserId = reader.GetInt32(2),
+                    HeroId = SafeGetInt32(reader, 3),
+                    HeroLevel = reader.GetInt32(4),
+                    Score = reader.GetInt32(5),
+                    ScoreTypeId = SafeGetInt32(reader, 6),
+                    Item0 = SafeGetInt32(reader, 7),
+                    Item1 = SafeGetInt32(reader, 8),
+                    Item2 = SafeGetInt32(reader, 9),
+                    Item3 = SafeGetInt32(reader, 10),
+                    Item4 = SafeGetInt32(reader, 11),
+                    Item5 = SafeGetInt32(reader, 12)
                 });
             }
             reader.Close();
@@ -60,26 +66,55 @@ namespace DotaChallengeV1.Models
             return ch.ChallengeDetails;
         }
 
-        public static ChallengeDetail AddChallengeDetail(int matchId, int chId, int userId, int heroId, float score)
+        public static string AddChallengeDetail(
+            int challengeId,
+            int userId,
+            int heroId,
+            int? heroLvl,
+            float score,
+            int scoreTypeId,
+            int? item0,
+            int? item1,
+            int? item2,
+            int? item3,
+            int? item4,
+            int? item5
+            )
         {
             MvcApplication.SqlConn.Open();
             ChallengeDetail chd = new ChallengeDetail();
-            SqlCommand comm = new SqlCommand("insert into challengedetail", MvcApplication.SqlConn);
-            using (SqlCommand command = new SqlCommand("", MvcApplication.SqlConn))
+            using (SqlCommand command = new SqlCommand(
+                "insert into challengedetail values (@chId, @userId, @heroId, @heroLvl, @score, @scoreTypeId, @i0, @i1, @i2, @i3, @i4, @i5)",
+                MvcApplication.SqlConn))
             {
-                command.Parameters.AddWithValue("@id", "abc");
-                command.Parameters.AddWithValue("@username", "abc");
-                command.Parameters.AddWithValue("@password", "abc");
-                command.Parameters.AddWithValue("@email", "abc");
+                command.Parameters.AddWithValue("@chId", challengeId);
+                command.Parameters.AddWithValue("@userId", userId);
+                command.Parameters.AddWithValue("@heroId", heroId);
+                command.Parameters.AddWithValue("@heroLvl", heroLvl);
+                command.Parameters.AddWithValue("@score", score);
+                command.Parameters.AddWithValue("@scoreTypeId", scoreTypeId);
+                command.Parameters.AddWithValue("@i0", (object)item0 ?? DBNull.Value);
+                command.Parameters.AddWithValue("@i1", (object)item1 ?? DBNull.Value);
+                command.Parameters.AddWithValue("@i2", (object)item2 ?? DBNull.Value);
+                command.Parameters.AddWithValue("@i3", (object)item3 ?? DBNull.Value);
+                command.Parameters.AddWithValue("@i4", (object)item4 ?? DBNull.Value);
+                command.Parameters.AddWithValue("@i5", (object)item5 ?? DBNull.Value);
 
                 int result = command.ExecuteNonQuery();
 
                 // Check Error
                 if (result < 0)
-                    Console.WriteLine("Error inserting data into Database!");
+                    return "error";
             }
             MvcApplication.SqlConn.Close();
-            return chd;
+            return "succes";
+        }
+
+        public static int? SafeGetInt32(SqlDataReader reader, int colIndex)
+        {
+            if (!reader.IsDBNull(colIndex))
+                return reader.GetInt32(colIndex);
+            return null;
         }
     }
 }

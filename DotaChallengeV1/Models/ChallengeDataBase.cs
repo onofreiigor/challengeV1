@@ -12,7 +12,7 @@ namespace DotaChallengeV1.Models
 
         public static SqlConnection ConnectDataBase()
         {
-            string connString = "workstation id=dotachallengedb.mssql.somee.com;packet size=4096;user id=ionofrei_SQLLogin_1;pwd=9jhfklmuay;data source=dotachallengedb.mssql.somee.com;persist security info=False;initial catalog=dotachallengedb";
+            string connString = "Server=tcp:dotachallenge.database.windows.net,1433;Initial Catalog=dotachallenge;Persist Security Info=False;User ID=ionofrei;Password=Igor7394;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=50;";
             try
             {
                 sqlConn = new SqlConnection(connString);

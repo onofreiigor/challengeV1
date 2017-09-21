@@ -25,7 +25,7 @@ namespace DotaChallengeV1.Models
             public int UserId { get; set; }
             public int? HeroId { get; set; }
             public int? HeroLevel { get; set; }
-            public int Score { get; set; }
+            public decimal Score { get; set; }
             public int? ScoreTypeId { get; set; }
             public int? Item0 { get; set; }
             public int? Item1 { get; set; }
@@ -39,26 +39,27 @@ namespace DotaChallengeV1.Models
         {
             Challenges ch = new Challenges();
             ch.ChallengeDetails = new List<ChallengeDetail>();
-            MvcApplication.SqlConn.Open();
+            if (MvcApplication.SqlConn.State == System.Data.ConnectionState.Closed)
+                MvcApplication.SqlConn.Open();
             SqlCommand comm = new SqlCommand("select * from challengedetail where challengeid = " + id, MvcApplication.SqlConn);
             SqlDataReader reader = comm.ExecuteReader();
             while (reader.Read())
             {
                 ch.ChallengeDetails.Add(new ChallengeDetail()
                 {
-                    DetailId = reader.GetInt32(0),
-                    ChallengeId = reader.GetInt32(1),
-                    UserId = reader.GetInt32(2),
-                    HeroId = SafeGetInt32(reader, 3),
-                    HeroLevel = reader.GetInt32(4),
-                    Score = reader.GetInt32(5),
-                    ScoreTypeId = SafeGetInt32(reader, 6),
-                    Item0 = SafeGetInt32(reader, 7),
-                    Item1 = SafeGetInt32(reader, 8),
-                    Item2 = SafeGetInt32(reader, 9),
-                    Item3 = SafeGetInt32(reader, 10),
-                    Item4 = SafeGetInt32(reader, 11),
-                    Item5 = SafeGetInt32(reader, 12)
+                    DetailId = (int)reader["DetailId"],
+                    ChallengeId = (int)reader["ChallengeId"],
+                    UserId = (int)reader["UserId"],
+                    HeroId = (int)reader["HeroId"],
+                    HeroLevel = (int)reader["HeroLevel"],
+                    Score = (decimal)reader["Score"],
+                    ScoreTypeId = (int)reader["ScoreTypeId"],
+                    Item0 = SafeGetInt(reader, 7),
+                    Item1 = SafeGetInt(reader, 8),
+                    Item2 = SafeGetInt(reader, 9),
+                    Item3 = SafeGetInt(reader, 10),
+                    Item4 = SafeGetInt(reader, 11),
+                    Item5 = SafeGetInt(reader, 12)
                 });
             }
             reader.Close();
@@ -81,7 +82,8 @@ namespace DotaChallengeV1.Models
             int? item5
             )
         {
-            MvcApplication.SqlConn.Open();
+            if (MvcApplication.SqlConn.State == System.Data.ConnectionState.Closed)
+                MvcApplication.SqlConn.Open();
             ChallengeDetail chd = new ChallengeDetail();
             using (SqlCommand command = new SqlCommand(
                 "insert into challengedetail values (@chId, @userId, @heroId, @heroLvl, @score, @scoreTypeId, @i0, @i1, @i2, @i3, @i4, @i5)",
@@ -110,10 +112,10 @@ namespace DotaChallengeV1.Models
             return "succes";
         }
 
-        public static int? SafeGetInt32(SqlDataReader reader, int colIndex)
+        public static int? SafeGetInt(SqlDataReader reader, int colIndex)
         {
             if (!reader.IsDBNull(colIndex))
-                return reader.GetInt32(colIndex);
+                return (int)reader[colIndex];
             return null;
         }
     }

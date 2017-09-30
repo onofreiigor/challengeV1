@@ -23,16 +23,16 @@ namespace DotaChallengeV1.Models
             public int DetailId { get; set; }
             public int ChallengeId { get; set; }
             public int UserId { get; set; }
-            public int? HeroId { get; set; }
+            public string HeroName { get; set; }
             public int? HeroLevel { get; set; }
             public decimal Score { get; set; }
             public int? ScoreTypeId { get; set; }
-            public int? Item0 { get; set; }
-            public int? Item1 { get; set; }
-            public int? Item2 { get; set; }
-            public int? Item3 { get; set; }
-            public int? Item4 { get; set; }
-            public int? Item5 { get; set; }
+            public string Item0 { get; set; }
+            public string Item1 { get; set; }
+            public string Item2 { get; set; }
+            public string Item3 { get; set; }
+            public string Item4 { get; set; }
+            public string Item5 { get; set; }
         }
 
         public static List<ChallengeDetail> GetChallengeDetailsById(int id)
@@ -50,16 +50,16 @@ namespace DotaChallengeV1.Models
                     DetailId = (int)reader["DetailId"],
                     ChallengeId = (int)reader["ChallengeId"],
                     UserId = (int)reader["UserId"],
-                    HeroId = (int)reader["HeroId"],
+                    HeroName = reader["HeroName"].ToString(),
                     HeroLevel = (int)reader["HeroLevel"],
                     Score = (decimal)reader["Score"],
                     ScoreTypeId = (int)reader["ScoreTypeId"],
-                    Item0 = SafeGetInt(reader, 7),
-                    Item1 = SafeGetInt(reader, 8),
-                    Item2 = SafeGetInt(reader, 9),
-                    Item3 = SafeGetInt(reader, 10),
-                    Item4 = SafeGetInt(reader, 11),
-                    Item5 = SafeGetInt(reader, 12)
+                    Item0 = SafeGetString(reader, "Item0"),
+                    Item1 = SafeGetString(reader, "Item1"),
+                    Item2 = SafeGetString(reader, "Item2"),
+                    Item3 = SafeGetString(reader, "Item3"),
+                    Item4 = SafeGetString(reader, "Item4"),
+                    Item5 = SafeGetString(reader, "Item5")
                 });
             }
             reader.Close();
@@ -70,28 +70,28 @@ namespace DotaChallengeV1.Models
         public static string AddChallengeDetail(
             int challengeId,
             int userId,
-            int heroId,
+            string heroName,
             int? heroLvl,
             float score,
             int scoreTypeId,
-            int? item0,
-            int? item1,
-            int? item2,
-            int? item3,
-            int? item4,
-            int? item5
+            string item0,
+            string item1,
+            string item2,
+            string item3,
+            string item4,
+            string item5
             )
         {
             if (MvcApplication.SqlConn.State == System.Data.ConnectionState.Closed)
                 MvcApplication.SqlConn.Open();
             ChallengeDetail chd = new ChallengeDetail();
             using (SqlCommand command = new SqlCommand(
-                "insert into challengedetail values (@chId, @userId, @heroId, @heroLvl, @score, @scoreTypeId, @i0, @i1, @i2, @i3, @i4, @i5)",
+                "insert into challengedetail values (@chId, @userId, @heroName, @heroLvl, @score, @scoreTypeId, @i0, @i1, @i2, @i3, @i4, @i5)",
                 MvcApplication.SqlConn))
             {
                 command.Parameters.AddWithValue("@chId", challengeId);
                 command.Parameters.AddWithValue("@userId", userId);
-                command.Parameters.AddWithValue("@heroId", heroId);
+                command.Parameters.AddWithValue("@heroName", heroName);
                 command.Parameters.AddWithValue("@heroLvl", heroLvl);
                 command.Parameters.AddWithValue("@score", score);
                 command.Parameters.AddWithValue("@scoreTypeId", scoreTypeId);
@@ -116,6 +116,13 @@ namespace DotaChallengeV1.Models
         {
             if (!reader.IsDBNull(colIndex))
                 return (int)reader[colIndex];
+            return null;
+        }
+
+        public static string SafeGetString(SqlDataReader reader, string colName)
+        {
+            if (!reader.IsDBNull(reader.GetOrdinal(colName)))
+                return reader[colName].ToString();
             return null;
         }
     }

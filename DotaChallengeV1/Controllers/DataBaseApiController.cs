@@ -19,21 +19,24 @@ namespace DotaChallengeV1.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult AddChallengeDetail (int challengeId, int userId, string heroName, int heroLvl, float score, int scoreTypeId, string item0, string item1, string item2, string item3, string item4, string item5)
+        public ActionResult AddChallengeDetail (int challengeId, int userId, string heroName, int heroLvl, decimal score, int scoreTypeId, string item0, string item1, string item2, string item3, string item4, string item5)
         {
-            string result = ChallengeGlobal.AddChallengeDetail(
-            challengeId, 
-            userId,
-            heroName,
-            heroLvl,
-            score,
-            scoreTypeId,
-            item0,
-            item1,
-            item2,
-            item3,
-            item4,
-            item5);
+            ChallengeGlobal.ChallengeDetail ch = new ChallengeGlobal.ChallengeDetail()
+            {
+                ChallengeId = challengeId,
+                UserId = userId,
+                HeroName = heroName,
+                HeroLevel = heroLvl,
+                Score = score,
+                ScoreTypeId = scoreTypeId,
+                Item0 = item0,
+                Item1 = item1,
+                Item2 = item2,
+                Item3 = item3,
+                Item4 = item4,
+                Item5 = item5
+            };
+            string result = ChallengeGlobal.AddChallengeDetail(ch);
             return Json(result, JsonRequestBehavior.AllowGet);
         }
     }

@@ -41,7 +41,7 @@ namespace DotaChallengeV1.Models
             ch.ChallengeDetails = new List<ChallengeDetail>();
             if (MvcApplication.SqlConn.State == System.Data.ConnectionState.Closed)
                 MvcApplication.SqlConn.Open();
-            SqlCommand comm = new SqlCommand("select * from challengedetail where challengeid = " + id, MvcApplication.SqlConn);
+            SqlCommand comm = new SqlCommand("select * from challengedetail where challengeid = " + id + " order by score desc", MvcApplication.SqlConn);
             SqlDataReader reader = comm.ExecuteReader();
             while (reader.Read())
             {
@@ -67,46 +67,56 @@ namespace DotaChallengeV1.Models
             return ch.ChallengeDetails;
         }
 
-        public static string AddChallengeDetail(
-            int challengeId,
-            int userId,
-            string heroName,
-            int? heroLvl,
-            float score,
-            int scoreTypeId,
-            string item0,
-            string item1,
-            string item2,
-            string item3,
-            string item4,
-            string item5
-            )
+        public static string AddChallengeDetail(ChallengeDetail ch)
         {
+            List<ChallengeDetail> list = GetChallengeDetailsById(ch.ChallengeId);
+            ChallengeDetail tmp = list.FirstOrDefault(el => el.UserId == ch.UserId && el.HeroName == ch.HeroName && el.HeroLevel == ch.HeroLevel);
+
             if (MvcApplication.SqlConn.State == System.Data.ConnectionState.Closed)
                 MvcApplication.SqlConn.Open();
-            ChallengeDetail chd = new ChallengeDetail();
-            using (SqlCommand command = new SqlCommand(
-                "insert into challengedetail values (@chId, @userId, @heroName, @heroLvl, @score, @scoreTypeId, @i0, @i1, @i2, @i3, @i4, @i5)",
-                MvcApplication.SqlConn))
+            if (tmp != null)
             {
-                command.Parameters.AddWithValue("@chId", challengeId);
-                command.Parameters.AddWithValue("@userId", userId);
-                command.Parameters.AddWithValue("@heroName", heroName);
-                command.Parameters.AddWithValue("@heroLvl", heroLvl);
-                command.Parameters.AddWithValue("@score", score);
-                command.Parameters.AddWithValue("@scoreTypeId", scoreTypeId);
-                command.Parameters.AddWithValue("@i0", (object)item0 ?? DBNull.Value);
-                command.Parameters.AddWithValue("@i1", (object)item1 ?? DBNull.Value);
-                command.Parameters.AddWithValue("@i2", (object)item2 ?? DBNull.Value);
-                command.Parameters.AddWithValue("@i3", (object)item3 ?? DBNull.Value);
-                command.Parameters.AddWithValue("@i4", (object)item4 ?? DBNull.Value);
-                command.Parameters.AddWithValue("@i5", (object)item5 ?? DBNull.Value);
+                if (tmp.Score >= ch.Score)
+                    return "low score";
+                using (SqlCommand command = new SqlCommand(
+                "update challengedetail set score = @score where detailid = @detailId and challengeid = @chId",
+                MvcApplication.SqlConn))
+                {
+                    command.Parameters.AddWithValue("@detailId", tmp.DetailId);
+                    command.Parameters.AddWithValue("@chId", tmp.ChallengeId);
+                    command.Parameters.AddWithValue("@score", ch.Score);
+                    int result = command.ExecuteNonQuery();
 
-                int result = command.ExecuteNonQuery();
+                    // Check Error
+                    if (result < 0)
+                        return "error";
+                }
+            }
+            else
+            {
+                using (SqlCommand command = new SqlCommand(
+                    "insert into challengedetail values (@chId, @userId, @heroName, @heroLvl, @score, @scoreTypeId, @i0, @i1, @i2, @i3, @i4, @i5)",
+                    MvcApplication.SqlConn))
+                {
+                    command.Parameters.AddWithValue("@chId", ch.ChallengeId);
+                    command.Parameters.AddWithValue("@userId", ch.UserId);
+                    command.Parameters.AddWithValue("@heroName", ch.HeroName);
+                    command.Parameters.AddWithValue("@heroLvl", ch.HeroLevel);
+                    command.Parameters.AddWithValue("@score", ch.Score);
+                    command.Parameters.AddWithValue("@scoreTypeId", ch.ScoreTypeId);
+                    command.Parameters.AddWithValue("@i0", (object)ch.Item0 ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@i1", (object)ch.Item1 ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@i2", (object)ch.Item2 ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@i3", (object)ch.Item3 ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@i4", (object)ch.Item4 ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@i5", (object)ch.Item5 ?? DBNull.Value);
 
-                // Check Error
-                if (result < 0)
-                    return "error";
+                    int result = command.ExecuteNonQuery();
+
+                    // Check Error
+                    if (result < 0)
+                        return "error";
+                }
             }
             MvcApplication.SqlConn.Close();
             return "succes";

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
@@ -39,9 +40,11 @@ namespace DotaChallengeV1.Models
         {
             Challenges ch = new Challenges();
             ch.ChallengeDetails = new List<ChallengeDetail>();
-            MvcApplication.SqlConn.Open();
+            if (MvcApplication.SqlConn.State == ConnectionState.Closed)
+                MvcApplication.SqlConn.Open();
             SqlCommand comm = new SqlCommand("select * from challengedetail where challengeid = " + id, MvcApplication.SqlConn);
-            SqlDataReader reader = comm.ExecuteReader();
+            SqlDataReader reader = null;
+            reader = comm.ExecuteReader();
             while (reader.Read())
             {
                 ch.ChallengeDetails.Add(new ChallengeDetail()
@@ -81,6 +84,7 @@ namespace DotaChallengeV1.Models
             int? item5
             )
         {
+            MvcApplication.SqlConn.Close();
             MvcApplication.SqlConn.Open();
             ChallengeDetail chd = new ChallengeDetail();
             using (SqlCommand command = new SqlCommand(

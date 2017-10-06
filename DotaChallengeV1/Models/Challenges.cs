@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
+using Steam.Models.SteamCommunity;
 
 namespace DotaChallengeV1.Models
 {
@@ -23,6 +25,8 @@ namespace DotaChallengeV1.Models
             public int DetailId { get; set; }
             public int ChallengeId { get; set; }
             public int UserId { get; set; }
+            public string UserName { get; set; }
+            public string AvatarPath { get; set; }
             public string HeroName { get; set; }
             public int? HeroLevel { get; set; }
             public decimal Score { get; set; }
@@ -35,7 +39,7 @@ namespace DotaChallengeV1.Models
             public string Item5 { get; set; }
         }
 
-        public static List<ChallengeDetail> GetChallengeDetailsById(int id)
+        public static async Task<List<ChallengeDetail>> GetChallengeDetailsByIdAsync(int id)
         {
             Challenges ch = new Challenges();
             ch.ChallengeDetails = new List<ChallengeDetail>();
@@ -43,18 +47,25 @@ namespace DotaChallengeV1.Models
                 MvcApplication.SqlConn.Open();
             SqlCommand comm = new SqlCommand("select * from challengedetail where challengeid = " + id + " order by score desc", MvcApplication.SqlConn);
             SqlDataReader reader = comm.ExecuteReader();
+
+            //TO DO change to norm id
+            ulong TmpSteamId = 76561198262139387;
+
             while (reader.Read())
             {
+                SteamCommunityProfileModel rs = await MvcApplication.SteamUser.GetCommunityProfileAsync(TmpSteamId);
+                string avatarPath = rs.AvatarFull.ToString();
                 ch.ChallengeDetails.Add(new ChallengeDetail()
                 {
                     DetailId = (int)reader["DetailId"],
                     ChallengeId = (int)reader["ChallengeId"],
                     UserId = (int)reader["UserId"],
+                    AvatarPath = avatarPath,
                     HeroName = reader["HeroName"].ToString(),
                     HeroLevel = (int)reader["HeroLevel"],
                     Score = (decimal)reader["Score"],
-                    ScoreTypeId = (int)reader["ScoreTypeId"],
                     Item0 = SafeGetString(reader, "Item0"),
+                    ScoreTypeId = (int)reader["ScoreTypeId"],
                     Item1 = SafeGetString(reader, "Item1"),
                     Item2 = SafeGetString(reader, "Item2"),
                     Item3 = SafeGetString(reader, "Item3"),
@@ -67,9 +78,9 @@ namespace DotaChallengeV1.Models
             return ch.ChallengeDetails;
         }
 
-        public static string AddChallengeDetail(ChallengeDetail ch)
+        public static async Task<string> AddChallengeDetailAsync(ChallengeDetail ch)
         {
-            List<ChallengeDetail> list = GetChallengeDetailsById(ch.ChallengeId);
+            List<ChallengeDetail> list = await GetChallengeDetailsByIdAsync(ch.ChallengeId);
             ChallengeDetail tmp = list.FirstOrDefault(el => el.UserId == ch.UserId && el.HeroName == ch.HeroName && el.HeroLevel == ch.HeroLevel);
 
             if (MvcApplication.SqlConn.State == System.Data.ConnectionState.Closed)
